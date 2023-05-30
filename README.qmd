@@ -1,0 +1,206 @@
+---
+title: README
+subtitle: Collaboration Project with Karl Berator
+author: Lauren Elborough
+date: today
+format: 
+  html:
+    self-contained: true
+    df-print: tibble
+editor_options:
+  chunk_output_type: console
+execute: 
+  warning: false
+  message: false
+---
+
+
+## Background information
+
+- Communication: Karl Berator - Research Assistant, Institute of -omics, Adelaide
+
+- Communication type / updates: Email
+
+- Analysis: in R
+
+
+# 1) Gene Expression Experiment: Powerpoint slides
+
+## Communication:
+
+#### Request from Karl Berator on 01/03/2023:
+
+- Data: https://docs.google.com/spreadsheets/d/1DCTEBES-uS0sz3QCSJZ_pfzwV6Gw6J9qiay74yz94dQ/edit?usp=sharing
+
+- The experiment looks at the effect of a new treatment on gene expression. We compared it to saline which we used as a placebo. We also looked at two cell lines. We then added different concentrations of a growth factor to see the effect on gene expression. We are interested in the effect of treatment on the effect of growth factor on gene expression. 
+
+- Powerpoint slides by C.O.B Friday March 24th
+
+
+
+#### Emailed Karl the following questions on 03/03/2023:
+
+- What the sheet names represent
+
+- The concentration units used
+
+- Whether the -99 entry is an NA value or an error point that will need to be looked at. 
+
+
+#### Reply received on 03/03/2023:
+
+- The sheet names are the gene line we used. 
+
+- The concentration units are mg/ml. 
+
+- Yes, we use -99 to indicate missing data. 
+
+
+#### Powerpoint emailed to Karl on 24/03/2023:
+
+- Sent Powerpoint as an attachment and wrote a list of the figures / tables included.
+
+
+## Analysis
+
+#### Data:
+
+- 88 observations (including one NA value) of variables:
+
+  - Gene expression - *numeric, variable of interest*
+  - Concentration - *0-10*
+  - Treatment types - *Activating Factor 42 and Placebo*
+  - Cell line - *Wild type and Cell type 101*
+  - Gene line - *GL-bNo, GL-CsE, GL-fUg, GL-Hoe, GL-jEK, GL-JZC, GL-Rza, GL-xpo* 
+
+- This is a repeated measures experiment, where each combination of cell line and treatment type was tested twice, for each concentration 0 to 10, and gene expression was measured.
+
+Cleaning data file in the `raw-data` folder - `WTF-IISfD-data.xlsx`:
+
+- Deleted the bar graphs and pie charts
+
+- Removed the mean and standard deviation
+
+- Combined all sheets into a data frame in one sheet and included columns about the treatment, gene type and cell line
+
+- Removed the -99 data point (used to indicate missing data)
+
+- Saved in the `data` folder as `2023-03-01_Gene-Expression-KB.xlsx`
+
+Figures and tables created in file `2023_03_01-gene_expression_KB.qmd`:
+
+- Read into R and made plots
+
+  - Histogram of gene expression
+  - Side by side box plots of gene expression by gene line, coloured by treatment
+  - Scatterplot of concentration vs gene expression, coloured by treatment
+  - Side by side box plots of gene expression by treatment, coloured by cell line
+  - Scatter plot of concentration vs gene expression, coloured by treatment and separated by cell line
+
+- Created a table of mean gene expression separated by treatment type (Activating Factor 42 and Placebo). Separated also by concentration to see how gene expression varies as this increases.
+- Made tables to separate this further by cell line (wild-type and cell-type 101). In both cases, the mean gene expression was greater for Activating Factor 42 than placebo, and increased as concentration increased.
+
+- Combined figures and tables into a Powerpoint - titled `2023_03_20-Gene_expression_experiment.pptx` in `presentations` folder.
+
+
+
+
+# 2) Gene Plot - updating figure
+
+## Communication:
+
+#### Request from Karl Berator on 03/04/2023:
+
+- Update plot: conference requirements are Times New Roman, and also they will only except a tiff file (9in x 6in) with a resolution of 500. 
+
+- By COB on Thursday.
+
+#### Reply to Karl on 04/04/2023:
+
+- Figure attached in a ZIP folder.
+
+
+## Analysis
+
+Original plot is in the `resources` folder, `2023_04_03-gene_plot.pdf`
+
+Updated plot created in file `2023_04_03-gene_plot.R`
+
+- Format the gene line names using `substr()` 
+- Created a custom colour palette - `colours <- c("#78A8D1", "#D6C099")`
+- Added Times New Roman (can be seen in `figures/times.ttf`)
+- Used `patchwork` to combine the two plots
+- Used `latex2exp` to add $\mu$ in the x-axis
+- Labelled the gene line for the final points, where concentration = 10
+- Used `ggsave` with the conditions: tiff file, width = 9in, height = 6in, dpi = 500 
+
+
+- Figure needed to be put into a ZIP file and sent that way, as the figure itself was too large.
+- ZIP file is in `figures` folder, `2023_04_03-gene_figure.zip`
+
+
+# 3) Sample size calculation
+
+## Communication:
+
+#### Request from Karl Berator on 01/05/2023:
+
+Sample size calculation - linear regression of gene expression with the predictors concentration, cell age, treatment (two levels), cell type (two levels), and media (two levels). We have done a previous study and got an $R^2$ of 0.1 between the predictors and the response level. 
+
+If we want a power of 90% and a significance level of 0.05 how many samples in total do we need?
+
+Due on Friday 5th May at 5pm.
+
+#### Response to Karl on 03/05/2023:
+
+Emailed the sample size (N = 154), along with the code and explanation for finding the value.
+
+
+## Analysis:
+
+Can be found in `2023_05_02-sample_size_calculation.R`. 
+
+Using the `pwr` package, and the `pwr.f2.test()` function, where 
+
+- $R2 = 0.1, u = 5, \text{ sig.level} = 0.05, \text{ power} = 0.9, f2 = R2/(1-R2).$
+
+- Sample size (N) $= v + u + 1, \;\; v = 147.8645$.
+
+- Sample size of $N = 154$ required.
+
+
+# 4) IMRaD report
+
+## Communication:
+
+#### Request from Karl Berator on 08/05/2023:
+
+IMRaD report by 5pm Friday May 26th 2023
+
+#### Response to Karl on 26/05/2023:
+
+Emailed a pdf of the report to Karl, asked him to get in contact if he wanted to see the code also.
+
+## Analysis:
+
+Report and analysis in file `2023_05_16-Gene_expression_IMRaD.qmd`.
+
+- Adjusted the style of the plot from `2023_04_03-gene_plot.R`, by changing the colours and removing the Times New Roman font.
+
+- Created four models using the `lmer` function, and compared using AIC and RMSE (table included in the report):
+
+  - `m1 <- lm(gene_expression ~ Concentration*treatment*cell_line, data = data)`
+
+  - `m2 <- lmer(gene_expression ~ Concentration + treatment*cell_line + (1 | gene_line), data = data)`
+
+  - `m3 <- lmer(gene_expression ~ Concentration*treatment*cell_line + (1 | gene_line), data = data)` 
+
+  - `m4 <- lmer(gene_expression ~ Concentration + treatment + (1 | gene_line), data = data)`
+
+- Used `ranova()` to see whether a random effect was significant, and `anova()` for the fixed effects. The random effect $(1 | \text{Gene line})$ was significant, as was a 3-way interaction between concentration, cell line and treatment. By the principle of marginality, we choose the full model.
+
+- Found the coefficients using `fixef()` and `ranef()`, and included these as a table in the report.
+
+- A table of the metrics AIC, r-squared and RMSE was also included for the final model, $m3$.
+
+- Included a plot which displayed the model - a scatterplot of the data of gene expression against concentration, coloured by gene line, with lines representing the predictions of the model, using `geom_line(aes(y = predict(m3), col = gene_line))`.

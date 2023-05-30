@@ -1,0 +1,47 @@
+"0","# Packages"
+"0","pacman::p_load(tidyverse, readxl, patchwork, latex2exp, ggrepel, lme4, gt, sjstats, lmerTest)"
+"2","Installing package into ‘C:/Users/elbor/AppData/Local/R/win-library/4.2’
+(as ‘lib’ is unspecified)
+"
+"2","Warning: downloaded length 0 != reported length 281"
+"2","Warning: cannot open URL 'https://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.2/PACKAGES.rds': HTTP status was '404 Not Found'"
+"2","Warning: downloaded length 0 != reported length 281"
+"2","Warning: cannot open URL 'https://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.2/PACKAGES.gz': HTTP status was '404 Not Found'"
+"2","Warning: downloaded length 0 != reported length 281"
+"2","Warning: cannot open URL 'https://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.2/PACKAGES': HTTP status was '404 Not Found'"
+"2","Warning: unable to access index for repository http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.2:
+  cannot open URL 'http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/4.2/PACKAGES'"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.2/lmerTest_3.1-3.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 531211 bytes (518 KB)
+"
+"2","downloaded 518 KB
+
+"
+"1","package ‘lmerTest’ successfully unpacked and MD5 sums checked
+"
+"1","
+"
+"1",""
+"1","The downloaded binary packages are in
+	C:\Users\elbor\AppData\Local\Temp\RtmpsHUGB1\downloaded_packages"
+"1",""
+"1","
+"
+"2","
+lmerTest installed
+"
+"0","theme_set(theme_bw())"
+"0",""
+"0","# Read in data"
+"0","data <- read_excel("
+"0","  here::here("
+"0","    ""data"", ""2023-03-01_Gene-Expression-KB.xlsx"""
+"0","  )"
+"0",")"
+"0",""
+"0","## Clean data"
+"0","# Remove -99 NA value"
+"0","data <- data %>% filter(gene_expression > 0)"
+"0","data <- rename(data,c('Concentration'='conc'))"

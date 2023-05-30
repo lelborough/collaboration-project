@@ -1,0 +1,3 @@
+"0","#| fig-cap: Histogram showing the number of each gene expression value observed. The counts appear right-skewed, with most of the  !!!!!!!!!!!!!!!!!!!!"
+"0","data %>% ggplot(aes(gene_expression))+geom_histogram(col = ""white"",fill = ""darkblue"")+"
+"0","  labs(x = ""Gene Expression"", y = ""Count"")"

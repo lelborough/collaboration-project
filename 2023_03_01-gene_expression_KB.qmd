@@ -1,0 +1,151 @@
+---
+title: "Effect of Activating Factor 42 on Gene Expression"
+author: "Lauren Elborough"
+date: "03/01/2023"
+format: html
+editor: visual
+---
+
+# Read in data
+
+```{r}
+pacman::p_load(tidyverse, readxl, gt)
+
+theme_set(theme_bw())
+
+data <- read_excel(
+  here::here(
+    "data", "2023-03-01_Gene-Expression-KB.xlsx"
+  )
+)
+```
+
+# Clean data
+
+```{r}
+# Remove -99 NA value
+data <- data %>% filter(gene_expression > 0)
+data <- rename(data,c('Concentration'='conc'))
+```
+
+# Tables
+
+```{r}
+#| tbl-cap: A table displaying mean gene expression for the Activating Factor 42 and placebo treatments, separated into concentrations. For all concentrations, the mean gene expression is larger for Activating Factor 42 than for the placebo.
+
+# Mean Gene expression for each concentration, split by activating factor 42 and placebo
+mean_activating <- data %>% 
+  filter(treatment == "Activating_Factor_42") %>% 
+  group_by(Concentration) %>% 
+  summarise(`Activating Factor 42` = mean(gene_expression))
+
+mean_placebo <- data %>% 
+  filter(treatment == "Placebo") %>%
+  group_by(Concentration) %>% 
+  summarise(`Placebo` = mean(gene_expression))
+
+merge(mean_activating, mean_placebo, by = "Concentration") %>% gt() # total
+```
+
+```{r}
+#| tbl-cap: A table displaying mean gene expression for the two treatments for each concentration, for Cell Type 101 only. The mean gene expression is larger for Activating Factor 42 than for the placebo.
+
+# Mean gene expression for each concentration for cell type 101 only
+mean_activating_101 <- data %>% 
+  filter(cell_line == "Cell_type_101") %>% 
+  filter(treatment == "Activating_Factor_42") %>% 
+  group_by(Concentration) %>% 
+  summarise(`Activating Factor 42` = mean(gene_expression))
+
+mean_placebo_101 <- data %>% 
+  filter(cell_line == "Cell_type_101") %>% 
+  filter(treatment == "Placebo") %>% 
+  group_by(Concentration) %>% 
+  summarise(`Placebo` = mean(gene_expression))
+
+merge(mean_activating_101, mean_placebo_101, by = "Concentration") %>% 
+  gt() # cell type 101
+```
+
+```{r}
+#| tbl-cap: A table displaying mean gene expression for the two treatments for each concentration, for Wild Type only. Again, the mean gene expression is larger for Activating Factor 42 than for the placebo.
+
+# Mean gene expression for each concentration for wild type only
+mean_activating_wild <- data %>% 
+  filter(cell_line == "Wild_type") %>% 
+  filter(treatment == "Activating_Factor_42") %>% 
+  group_by(Concentration) %>% 
+  summarise(`Activating Factor 42` = mean(gene_expression))
+
+mean_placebo_wild <- data %>% 
+  filter(cell_line == "Wild_type") %>% 
+  filter(treatment == "Placebo") %>% 
+  group_by(Concentration) %>% 
+  summarise(`Placebo` = mean(gene_expression))
+
+merge(mean_activating_wild, mean_placebo_wild, by = "Concentration") %>% 
+  gt() # wild type
+```
+
+# Plots
+
+```{r}
+#| label: fig-1
+#| fig-cap: Histogram showing the number of each gene expression value observed. The counts appear right-skewed, where most of the values lie between 4 and 20.
+
+# Histogram of gene expression
+data %>% ggplot(aes(gene_expression))+
+  geom_histogram(col = "white",fill = "darkblue")+
+  labs(x = "Gene Expression", y = "Count")
+```
+
+```{r}
+#| label: fig-2
+#| fig-cap: A boxplot showing the spread of gene expression for each gene line, coloured by treatment type. GL-xpo appears to have the greatest median gene expression and GL-bNo the lowest, indicated by the centre lines in the boxplots. In general, the genes treated with Activating Factor 42 have a greater gene expression, but also much larger variation in the values found.
+data %>% ggplot(aes(fct_reorder(gene_line,gene_expression), 
+                    gene_expression))+
+  geom_boxplot(aes(col = treatment))+
+  scale_colour_brewer(palette = "Dark2")+
+  labs(x = "Gene Line", y = "Gene Expression", col = "Treatment")
+```
+
+```{r}
+#| label: fig-3
+#| fig-cap: A scatterplot showing the concentration of growth factor against gene expression, coloured by treatment. As concentration increases, gene expression also increases linearly, with a steeper increase for Activating Factor 42 per unit concentration (mg/ml) compared with the placebo trials. On average, there is greater gene expression for the Activating Factor 42 treatment than the placebo.
+data %>% ggplot(aes(Concentration, gene_expression))+
+  geom_point(aes(col = treatment))+
+  geom_smooth(aes(col = treatment))+
+  scale_colour_brewer(palette = "Dark2")+
+  labs(x = "Concentration", y="Gene Expression")
+```
+
+```{r}
+#| label: fig-4
+#| fig-cap: A box plot displaying gene expression for each treatment, coloured by cell line. There is much greater variation in the data for the Activating Factor 42 treatment, but on average the gene expression is much greater. Cell Type 101 appears to have larger variation for both treatment types.
+data %>% ggplot(aes(treatment, gene_expression))+
+  geom_boxplot(aes(col = cell_line))+
+  scale_colour_brewer(palette = "Dark2")+ 
+  labs(x = "Treatment", y = "Gene Expression", col = "Cell Line")
+```
+
+```{r}
+#| label: fig-5
+#| fig-cap: A scatterplot showing concentration against gene expression, separated by cell line and coloured by treatment. There appears to be no strong differences in the gene expression between cell types.
+data %>% ggplot(aes(Concentration, gene_expression, 
+                    color = treatment))+
+  geom_point()+ 
+  facet_wrap(~cell_line) + 
+  scale_colour_brewer(palette = "Dark2")+
+  labs(x = 'Concentration', y = 'Gene Expression')
+```
+
+```{r}
+#| label: fig-6
+#| fig-cap: A scatterplot showing the concentration of growth factor against gene expression, coloured by treatment, with size representing the cell line. The lines represent quantiles, where $25\%, 50\%$ and $75\%$ of values lie below the lines, respectively. We find that on average, as the concentration of growth factor increases, gene expression also increases. Gene lines treated with Activating Factor 42 appear to have greater gene expression for all concentrations, meanwhile there does not appear to be a strong relationship between the cell line and gene expression.
+data %>% ggplot(aes(Concentration, gene_expression))+
+  geom_point(aes(col = treatment, shape = cell_line))+
+  scale_colour_brewer(palette = "Dark2")+
+  geom_quantile(col = "black", alpha = 0.4)+
+  labs(x= "Concentration", y = "Gene Expression", 
+       shape = "Cell Line", col = "Treatment")
+```

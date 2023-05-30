@@ -1,0 +1,3 @@
+"0","# Remove -99 NA value"
+"0","data <- data %>% filter(gene_expression > 0)"
+"0","data <- rename(data,c('Concentration'='conc'))"

@@ -1,0 +1,179 @@
+---
+title: "Gene Expression Analysis Report"
+author: "Lauren Elborough"
+date-format: long
+date: today
+format: pdf
+editor: visual
+execute: 
+  warning: false
+  message: false
+  echo: false
+bibliography: references.bib
+---
+
+```{r}
+# Packages
+pacman::p_load(tidyverse, readxl, patchwork, latex2exp, ggrepel, lme4, gt, sjstats, lmerTest, performance)
+
+theme_set(theme_bw())
+
+# Read in data
+data <- read_excel(
+  here::here(
+    "data", "2023-03-01_Gene-Expression-KB.xlsx"
+  )
+)
+
+## Clean data
+# Remove -99 NA value
+data <- data %>% filter(gene_expression > 0)
+data <- rename(data,c('Concentration'='conc'))
+```
+
+# Introduction
+
+The Gene Expression dataset consists of 88 observations of 5 variables:
+
+-   Concentration: a number between 0 and 10,
+-   Cell line: wild type or cell type 101,
+-   Treatment: Activating Factor 42 or placebo,
+-   Gene line: GL-bNo, GL-CsE, GL-fUg, GL-Hoe, GL-jEK, GL-JZC, GL-Rza or GL-xpo, and
+-   Gene expression: a numeric value, variable of interest.
+
+The key research question was to find the effect of a new treatment, Activating Factor 42, on gene expression by comparing it to a placebo, saline. The experiment also looks at different concentrations and cell lines. This is a repeated measures experiment, where each combination of cell line and treatment type was tested on two different gene lines at each concentration level, and gene expression was measured.
+
+# Method
+
+The data was analysed using the packages `tidyverse` [@tidyverse], `lme4` [@lme4], `lmerTest` [@lmerTest], and `sjstats` [@sjstats] in R [@r-2023] in RStudio.
+
+The data was preprocessed by adding columns *treatment*, *gene_line* and *cell_line*, and removing the -99 NA value. Several random-intercept models were fit to the data using the `lme4` package. The outcome was gene expression, and the predictors were concentration, treatment and cell line, with gene line as a random effect.
+
+```{r, models, results=F}
+# Fit different models, start with largest
+m1 <- lm(gene_expression ~ Concentration*treatment*cell_line, data = data)
+
+m2 <- lmer(gene_expression ~ Concentration + treatment*cell_line + (1 | gene_line), data = data)
+
+m3 <- lmer(gene_expression ~ Concentration*treatment*cell_line + (1 | gene_line), data = data)
+ranova(m3)
+anova(m3)
+
+m4 <- lmer(gene_expression ~ Concentration + treatment + (1 | gene_line), data = data)
+
+# Calculate metrics
+compare_performance(m2, m3)
+r2_m3 <- 0.891
+rmse <- c(rmse(m1), rmse(m2), rmse(m3), rmse(m4))
+AIC <- AIC(m1,m2,m3,m4)
+AIC_m3 <- AIC(m3)
+```
+
+We start with a full model with a 3-way interaction for concentration, treatment and cell line. Next we have a model including a random intercept for gene line, and use a `ranova` test to determine whether the random intercept was significant. We then take a step-down approach, looking at the p-values for different terms, to find the best model. The four models were compared using AIC and root mean square error (RMSE).
+
+# Results
+
+@fig-eda-plot shows side by side scatterplots of gene expression against concentration, separated by cell line and coloured by treatment type, to see general patterns in the data. We find that as concentration increases, gene expression increases. Gene expression is also greater at each concentration for Activating Factor 42 than placebo. There is a strong positive relationship between concentration and gene expression for the treatment, and weaker for the placebo. There does not appear to be a significant difference between the two cell lines.
+
+```{r, karl_plot_code}
+# Format gene line names and treatment names
+data$gene_line <- substr(data$gene_line, 4, nchar(data$gene_line))
+data <- data %>% 
+  mutate(treatment = ifelse(treatment == "Activating_Factor_42","Activating factor 42","Placebo"))
+
+# Manual colour palette
+colours <- c("#F0E442", "#CC79A7")
+
+# Wild type plot
+p1 <- data %>% 
+  filter(cell_line == "Wild_type") %>% # wild type only
+  ggplot(aes(Concentration, gene_expression, fill = treatment)) + # colour by treatment
+  geom_point(col = "black", shape = 21, size = 3) + # black outlines
+  geom_label_repel(aes(label = ifelse(Concentration == 10, gene_line,'')), min.segment.length = 0, 
+                   nudge_x = 0.8, 
+                   show.legend = F) + # labels for gene line
+  labs(x = TeX(r'(Concentration ($\mu$g/ml))'), y = "Gene Expression", fill = "Treatment") + # labels
+  scale_fill_manual(values = colours) + # individual colours
+  scale_x_continuous(breaks = c(0:10), limits = c(0, 11)) + # x axis
+  ggtitle('Wild-type') # title
+
+# Cell type 101 plot
+p2 <- data %>% 
+  filter(cell_line == "Cell_type_101") %>% # cell type 101 only
+  ggplot(aes(Concentration, gene_expression, fill = treatment)) + # colour by treatment
+  geom_point(col = "black", shape = 21, size = 3) + # black outlines
+  geom_label_repel(aes(label = ifelse(Concentration == 10, gene_line,'')),
+                   min.segment.length = 0, 
+                   nudge_x = 0.8, 
+                   show.legend = F) + # labels for gene line
+  labs(x = TeX(r'(Concentration ($\mu$g/ml))'), y = "Gene Expression", fill = "Treatment") + 
+  ggtitle('Cell-type 101') + # title
+  scale_x_continuous(breaks = c(0:10), limits = c(0, 11))+ # x axis
+  scale_fill_manual(values = colours) # manual colours
+
+# Combine plots
+plot <- p1 + p2 + plot_layout(guides = "collect") + # combine plots and combine treatment legend
+  plot_annotation(tag_levels = 'A') & 
+  theme(legend.position = "bottom") # add labels and put legend at bottom
+```
+
+```{r, karl_plot}
+#| fig-cap: Side by side scatterplots of gene expression against concentration, separated by cell line and coloured by treatment type, from the Gene Expression dataset.
+#| label: fig-eda-plot
+plot
+```
+
+See @tbl-metrics for the associated AIC and root mean square error (RMSE) for the four models. We choose the model with the lowest AIC and RMSE, hence Model 3 is the chosen model. The `ranova` test showed a significant random effect, and the `anova` test showed a significant 3-way interaction.
+
+So, our chosen model is a random intercept model, with gene expression as the response variable, gene line as a random effect, and 3-way interaction between concentration, cell line and treatment, with all 2-way interactions and single terms included.
+
+```{r, metrics}
+#| tbl-cap: Table of AIC and RMSE metrics for the four models.
+#| label: tbl-metrics
+data.frame(Model = c("Model 1", "Model 2", "Model 3", "Model 4"), AIC, RMSE = rmse) %>% gt()
+```
+
+The coefficients of the fixed effects for the model are given in @tbl-fixed with a 95% confidence interval, and the adjustment to the intercept for each gene line is given in @tbl-rand.
+
+```{r, fixed_effects}
+#| label: tbl-fixed
+#| tbl-cap: Table of the cofficient estimates and 95% confidence interval values.
+# Extract out the parameter estimates and confidence intervals
+ci <- confint(m3)
+fixed <- fixef(m3)
+data.frame(Term = c("Intercept", "Concentration", "treatmentPlacebo","cell_lineWild_type", "Concentration:treatmentPlacebo", "Concentration:cell_lineWild_type", "treatmentPlacebo:cell_lineWild_type", "Concentration:treatmentPlacebo:cell_lineWild_type"), Lower = ci[-(1:2),1], Estimate = fixed, Upper = ci[-(1:2), 2]) %>% gt()
+```
+
+```{r, rand_effects}
+#| label: tbl-rand
+#| tbl-cap: Table of the adjustments to the intercept estimates for each gene line.
+data.frame(ranef(m3)) %>% mutate(Gene_line = grp, Intercept = condval) %>% select(Gene_line, Intercept) %>% gt()
+```
+
+@fig-model-plot is a plot showing the fit of the model on the original data, where the points are the data and the lines represent estimates by the model. In general, the model lines fit the data well. Gene lines *xpo*, *bNo* and *Rza* display slightly more variation around the lines than the others. We see larger intercepts and steeper slopes in the Activating Factor 42 treatment gene lines compared with the Placebo, as expected.
+
+```{r, model plot}
+#| fig-cap: A plot of gene expression against concentration, coloured by gene line, from the Gene Expression dataset. The points are the data, and the lines represent estimates by the model.
+#| label: fig-model-plot
+data %>% ggplot(aes(Concentration, gene_expression)) +
+  geom_point(aes(col = gene_line, shape = treatment)) +
+  geom_line(aes(y = predict(m3), col = gene_line)) +
+  scale_color_brewer(palette = "Set1") +
+  labs(y = "Gene Expression", col = "Gene line", shape = "Treatment")
+```
+
+@tbl-final-metrics shows the observed AIC, r-squared and RMSE for the final model.
+
+```{r, final metrics}
+#| label: tbl-final-metrics
+#| tbl-cap: Table of the metrics for the chosen model, with a 3-way interaction and random intercept.
+data.frame(Metrics = c("AIC", "R-squared", "RMSE"), Values = c(AIC_m3, r2_m3, rmse[3])) %>% gt()
+```
+
+# Discussion
+
+The final model shows that a 3-way interaction between concentration, cell line and treatment is appropriate. We see an r-squared value of 0.89 in @tbl-final-metrics for this model, meaning that 89% of the variation in gene expression is explained by our final model.
+
+From the model, we conclude that as concentration increases, gene expression increases. We also observe greater gene expression in the case of the Activating Factor 42 treatment compared with the placebo.
+
+# References

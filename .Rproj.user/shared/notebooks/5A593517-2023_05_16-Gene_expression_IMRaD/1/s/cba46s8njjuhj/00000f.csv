@@ -1,0 +1,4 @@
+"0","m4 <- lmer(gene_expression ~ (1 | cell_line) + (Concentration | treatment), data=data)
+"
+"2","boundary (singular) fit: see help('isSingular')
+"
