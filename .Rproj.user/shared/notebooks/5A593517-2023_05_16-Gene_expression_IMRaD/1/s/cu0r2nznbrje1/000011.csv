@@ -1,0 +1,10 @@
+"0","# Calculate metrics
+compare_performance(m2, m3)
+"
+"1","[34m# Comparison of Model Performance Indices[39m
+
+Name |           Model | AIC (weights) | AICc (weights) | BIC (weights) | R2 (cond.) | R2 (marg.) |   ICC |  RMSE | Sigma
+-------------------------------------------------------------------------------------------------------------------------
+m2   | lmerModLmerTest | 504.1 (<.001) |  505.5 (<.001) | 521.3 (<.001) |      0.884 |      0.805 | 0.407 | 3.587 | 3.777
+m3   | lmerModLmerTest | 372.5 (>.999) |  375.4 (>.999) | 397.2 (>.999) |      0.979 |      0.891 | 0.806 | 1.500 | 1.615
+"

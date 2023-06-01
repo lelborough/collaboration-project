@@ -6,9 +6,7 @@
 # Linear regression of gene expression with the predictors concentration, 
 # cell age, treatment (two levels), cell type (two levels), and media (two levels). 
 # $R^2$ of 0.1 between the predictors and the response level. 
-
-# If we want a power of 90% and a significance level of 0.05,
-# how many samples in total do we need?
+# We want a power of 90% and a significance level of 0.05.
 
 # pwr package
 pacman::p_load(pwr)

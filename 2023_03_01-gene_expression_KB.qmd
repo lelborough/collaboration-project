@@ -102,6 +102,8 @@ data %>% ggplot(aes(gene_expression))+
 ```{r}
 #| label: fig-2
 #| fig-cap: A boxplot showing the spread of gene expression for each gene line, coloured by treatment type. GL-xpo appears to have the greatest median gene expression and GL-bNo the lowest, indicated by the centre lines in the boxplots. In general, the genes treated with Activating Factor 42 have a greater gene expression, but also much larger variation in the values found.
+
+# Boxplot of gene expression for each gene line, coloured by treatment type. Fct_reorder to order from lowest median to highest
 data %>% ggplot(aes(fct_reorder(gene_line,gene_expression), 
                     gene_expression))+
   geom_boxplot(aes(col = treatment))+
@@ -112,6 +114,8 @@ data %>% ggplot(aes(fct_reorder(gene_line,gene_expression),
 ```{r}
 #| label: fig-3
 #| fig-cap: A scatterplot showing the concentration of growth factor against gene expression, coloured by treatment. As concentration increases, gene expression also increases linearly, with a steeper increase for Activating Factor 42 per unit concentration (mg/ml) compared with the placebo trials. On average, there is greater gene expression for the Activating Factor 42 treatment than the placebo.
+
+# Scatterplot of gene expression against concentration, coloured by treatment
 data %>% ggplot(aes(Concentration, gene_expression))+
   geom_point(aes(col = treatment))+
   geom_smooth(aes(col = treatment))+
@@ -122,6 +126,8 @@ data %>% ggplot(aes(Concentration, gene_expression))+
 ```{r}
 #| label: fig-4
 #| fig-cap: A box plot displaying gene expression for each treatment, coloured by cell line. There is much greater variation in the data for the Activating Factor 42 treatment, but on average the gene expression is much greater. Cell Type 101 appears to have larger variation for both treatment types.
+
+# Boxplot of gene expression for each treatment, coloured by cell line
 data %>% ggplot(aes(treatment, gene_expression))+
   geom_boxplot(aes(col = cell_line))+
   scale_colour_brewer(palette = "Dark2")+ 
@@ -131,6 +137,8 @@ data %>% ggplot(aes(treatment, gene_expression))+
 ```{r}
 #| label: fig-5
 #| fig-cap: A scatterplot showing concentration against gene expression, separated by cell line and coloured by treatment. There appears to be no strong differences in the gene expression between cell types.
+
+# Scatterplot of gene expression against concentration, facet_wrap to separate by cell line
 data %>% ggplot(aes(Concentration, gene_expression, 
                     color = treatment))+
   geom_point()+ 
@@ -141,7 +149,9 @@ data %>% ggplot(aes(Concentration, gene_expression,
 
 ```{r}
 #| label: fig-6
-#| fig-cap: A scatterplot showing the concentration of growth factor against gene expression, coloured by treatment, with size representing the cell line. The lines represent quantiles, where $25\%, 50\%$ and $75\%$ of values lie below the lines, respectively. We find that on average, as the concentration of growth factor increases, gene expression also increases. Gene lines treated with Activating Factor 42 appear to have greater gene expression for all concentrations, meanwhile there does not appear to be a strong relationship between the cell line and gene expression.
+#| fig-cap: A scatterplot showing the concentration of growth factor against gene expression, coloured by treatment, with shape representing the cell line. The lines represent quantiles, where $25\%, 50\%$ and $75\%$ of values lie below the lines, respectively. We find that on average, as the concentration of growth factor increases, gene expression also increases. Gene lines treated with Activating Factor 42 appear to have greater gene expression for all concentrations, meanwhile there does not appear to be a strong relationship between the cell line and gene expression.
+
+# Scatterplot of gene expression against concentration, shape for the cell line and colour for treatment
 data %>% ggplot(aes(Concentration, gene_expression))+
   geom_point(aes(col = treatment, shape = cell_line))+
   scale_colour_brewer(palette = "Dark2")+
